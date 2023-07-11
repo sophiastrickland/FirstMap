@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <title>Earthquake List</title>
+    <title>Starbucks Locations in Seattle</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
@@ -16,11 +16,11 @@
         #container {
             display: flex;
             height: 100vh;
-            flex-direction: row;
+            flex-direction: row-reverse;
             align-items: stretch;
         }
 
-        #table {
+        #side-panel {
             flex-basis: 500px;
             overflow-y: scroll;
         }
@@ -31,22 +31,55 @@
 
         button {
             margin-bottom: 10px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: inline-block;
+            border: none;
+            color: #1d820f;
+            padding: 16px 32px;
+            text-align: center;
+            text-decoration: none;
+            width: 50%;
         }
+
+        .sort_button {
+        background-color: rgb(235, 235, 235);
+        color: black;
+        border: 1px solid #b6b6b6;
+        }
+
+        .sort_button:hover {
+        background-color: #4caf50;
+        color: white;
+        }
+
         table {
             border-collapse: collapse;
             border-spacing: 0;
             width: 100%;
-            border: 1px solid #ddd;
+            border: 1px solid rgb(255, 255, 255);
         }
 
         th,
         td {
-            text-align: left;
+            text-align: center;
             padding: 16px;
         }
 
         tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color: #99c59c;
+        }
+
+        @media (max-width: 1024px) {
+            #container {
+                flex-direction: column-reverse;
+            }
+
+            #table {
+                display: none
+            }
         }
     </style>
 </head>
@@ -55,15 +88,15 @@
     <main id="container">
         <div id="table">
 
-            <h2>Earthquake List</h2>
-            <button onclick="sortTable()">Sort by Magnitude</button>
+            <h2>Starbucks Locations in Seattle</h2>
+            <button onclick="sortTable()">Sort by Google Rating</button>
             
 
             <table>
                 <tr>
-                    <th>id</th>
-                    <th>magnitude</th>
-                    <th>timestamp</th>
+                    <th>Name</th>
+                    <th>Rating</th>
+                    <th>Description</th>
                 </tr>
             </table>
 
@@ -73,42 +106,42 @@
     </main>
     <script>
         mapboxgl.accessToken =
-            'pk.eyJ1Ijoic29waGlhc3RyaWNrbGFuZCIsImEiOiJjbGp4amUxMTMwMTB2M25waXhqdGZ4cGZzIn0.V7ZPLGuS2I98AT_1b7jzXg';
+            'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
         const map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/satellite-v9', // style URL
-            zoom: 5.5, // starting zoom
-            center: [138.043, 38] // starting center
+            style: 'mapbox://styles/mapbox/outdoors-v12', // style URL
+            zoom: 10, // starting zoom
+            center: [-122.329856, 47.604418] // starting center
         });
 
 
         async function geojsonFetch() {
 
 
-            let response = await fetch('assets/earthquakes.geojson');
+            let response = await fetch('assets/Starbucks.geojson');
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            let earthquakes = await response.json();
+            let Starbucks = await response.json();
 
 
-            response = await fetch('assets/japan.json');
+            response = await fetch('assets/washington.json');
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            let japan = await response.json();
+            let washington = await response.json();
 
 
             var table = document.getElementsByTagName("table");
-            for (let i = 0; i < earthquakes.features.length; i++) {
-                // console.log(earthquakes.features[i].properties.id);
+            for (let i = 0; i < Starbucks.features.length; i++) {
+                // console.log(Starbucks.features[i].properties.id);
 
-                var lng = await earthquakes.features[i].geometry.coordinates[0];
-                var lat = await earthquakes.features[i].geometry.coordinates[1];
+                var lng = await Starbucks.features[i].geometry.coordinates[0];
+                var lat = await Starbucks.features[i].geometry.coordinates[1];
 
                 // Create an empty <tr> element and add it to the 1st position of the table:
                 var row = table[0].insertRow(-1);
@@ -116,10 +149,9 @@
                 var cell1 = row.insertCell(0);
                 var cell2 = row.insertCell(1);
                 var cell3 = row.insertCell(2);
-                cell1.innerHTML = await earthquakes.features[i].properties.id;
-                cell2.innerHTML = await earthquakes.features[i].properties.mag;
-                cell3.innerHTML = await new Date(earthquakes.features[i].properties.time).toLocaleDateString("en-US");
-
+                cell1.innerHTML = await Starbucks.features[i].properties.Name;
+                cell2.innerHTML = await Starbucks.features[i].properties.rating;
+                cell3.innerHTML = await Starbucks.features[i].properties.description;
             }
 
 
@@ -129,15 +161,15 @@
 
 
 
-                map.addSource('earthquakes', {
+                map.addSource('Starbucks', {
                     type: 'geojson',
-                    data: earthquakes
+                    data: Starbucks
                 });
 
                 map.addLayer({
-                    'id': 'earthquakes-layer',
+                    'id': 'Starbucks-layer',
                     'type': 'circle',
-                    'source': 'earthquakes',
+                    'source': 'Starbucks',
                     'paint': {
                         'circle-radius': 8,
                         'circle-stroke-width': 2,
@@ -147,15 +179,15 @@
                 });
 
 
-                map.addSource('japan', {
+                map.addSource('washington', {
                     type: 'geojson',
-                    data: japan
+                    data: washington
                 });
 
                 map.addLayer({
-                    'id': 'japan-layer',
+                    'id': 'washington-layer',
                     'type': 'fill',
-                    'source': 'japan',
+                    'source': 'washington',
                     'paint': {
                         'fill-color': '#0080ff', // blue color fill
                         'fill-opacity': 0.5
